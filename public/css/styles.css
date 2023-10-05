@@ -1,0 +1,21 @@
+@font-face {
+  font-family: "Anton";
+  src: url("/Fonts/Anton/Anton-Regular.ttf") format("woff2"),
+    url("/Fonts/Anton/Anton-Regular.ttf") format("woff");
+  /* Add additional source URLs for other formats if available */
+  font-weight: normal;
+  font-style: normal;
+}
+
+.navbar-text {
+  color: white;
+  font-size: 30px;
+  font: Anton;
+  font-weight: 400;
+  text-transform: uppercase;
+  word-wrap: break-word;
+}
+
+body{
+  background: blanchedalmond;
+}
