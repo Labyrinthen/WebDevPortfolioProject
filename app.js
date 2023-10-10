@@ -1,13 +1,16 @@
-
-// git add.; git commit --m ""; git push
-
-
+/*
+git status
+git add .
+git commit -m "Your commit message here"
+git push origin main
+*/
 
 const express = require("express"); // loads the express package
 const { engine } = require("express-handlebars"); // loads handlebars for Express
 const port = 8080; // defines the port
 const app = express(); // creates the Express application
 const bodyParser = require("body-parser");
+const path = require("path");
 const session = require("express-session");
 const connectSqlite3 = require("connect-sqlite3");
 const cookieParser = require("cookie-parser");
@@ -22,6 +25,8 @@ app.set("views", "./views");
 
 // define static directory "public" to access css/ and img/
 app.use(express.static("public"));
+
+app.use("/public", express.static(path.join(__dirname, "/public")));
 
 app.use((req, res, next) => {
   console.log("Req. URL: ", req.url);
@@ -58,17 +63,12 @@ app.get("/", (req, res) => {
   res.render("home.handlebars", model); // Pass the model to the template
 });
 
-app.get("/favicon.ico", (req, res) => {
-  const model = {};
-  res.render("login.handlebars", model);
-});
-
 app.get("/logout", (req, res) => {
   req.session.destroy((error) => {
     if (error) {
       console.error("Error destroying session:", error);
     }
-    res.redirect("/login"); // Redirect to the login page after logging out
+    res.redirect("/"); // Redirect to the home page after logging out
   });
 });
 
@@ -107,7 +107,7 @@ app.get("/projects", (req, res) => {
   });
 });
 
-app.get("/projects/delete/:id", (req, res) => {
+app.post("/projects/:id/delete", (req, res) => {
   const id = req.params.id;
   if (req.session.isLoggedIn == true && req.session.isAdmin == true) {
     db.run(
@@ -122,16 +122,9 @@ app.get("/projects/delete/:id", (req, res) => {
             name: req.session.name,
             isAdmin: req.session.isAdmin,
           };
-          res.render("home.handlebars", model);
+          res.render("projects.handlebars", model);
         } else {
-          const model = {
-            dbError: false,
-            theError: "",
-            isLoggedIn: req.session.isLoggedIn,
-            name: req.session.name,
-            isAdmin: req.session.isAdmin,
-          };
-          res.render("home.handlebars", model);
+          res.redirect("/projects");
         }
       }
     );
@@ -146,6 +139,7 @@ app.get("/projects/new", (req, res) => {
       isLoggedIn: req.session.isLoggedIn,
       name: req.session.name,
       isAdmin: req.session.isAdmin,
+      session,
     };
     res.render("newproject.handlebars", model);
   } else {
@@ -154,6 +148,7 @@ app.get("/projects/new", (req, res) => {
 });
 
 app.post("/projects/new", (req, res) => {
+  console.log("Request Body:", req.body);
   const newp = [
     req.body.projname,
     req.body.projyear,
@@ -179,7 +174,7 @@ app.post("/projects/new", (req, res) => {
   }
 });
 
-app.get("/projects/update/:id", (req, res) => {
+app.post("/projects/:id/update", (req, res) => {
   const id = req.params.id;
   db.get(
     "SELECT * FROM projects WHERE pid=?",
@@ -222,7 +217,7 @@ app.get("/projects/update/:id", (req, res) => {
   );
 });
 
-app.post("/projects/update/:id", (req, res) => {
+app.post("/projects/:id/update", (req, res) => {
   const id = req.params.id;
   const newp = [
     req.body.projname,
@@ -234,7 +229,7 @@ app.post("/projects/update/:id", (req, res) => {
   ];
   if (req.session.isLoggedIn == true && req.session.isAdmin == true) {
     db.run(
-      "UPDATE projects SET pname=?, pyear=?, pdesc=?, ptype=?, pimgURL=?, WHERE pid=?",
+      "UPDATE projects SET pname=?, pyear=?, pdesc=?, ptype=?, pimgURL=? WHERE pid=?",
       newp,
       (error) => {
         if (error) {
@@ -301,7 +296,7 @@ app.listen(port, () => {
 
 // creates table projects at startup
 db.run(
-  "CREATE TABLE projects (pid INTEGER PRIMARY KEY, pname TEXT NOT NULL, pyear INTEGER NOT NULL, pdesc TEXT NOT NULL, ptype TEXT NOT NULL, pimgURL TEXT NOT NULL)",
+  "CREATE TABLE IF NOT EXISTS projects (pid INTEGER PRIMARY KEY, pname TEXT NOT NULL, pyear INTEGER NOT NULL, pdesc TEXT NOT NULL, ptype TEXT NOT NULL, pimgURL TEXT NOT NULL)",
   (error) => {
     if (error) {
       // tests error: display error
@@ -312,43 +307,42 @@ db.run(
       const projects = [
         {
           id: "1",
-          name: "Counting people with a camera",
-          type: "research",
-          desc: "The purpose of this project is to count people passing through acorridor and to know how many are in the room at a certain time.",
+          name: "Cyberpunk tiger",
+          type: "other",
+          desc: "Cool art of a tiger in the future",
           year: 2022,
-          dev: "Python and OpenCV (Computer vision) library",
           url: "/img/a.png",
         },
         {
           id: "2",
-          name: "Visualisation of 3D medical images",
-          type: "research",
-          desc: "The project makes a 3D model of the analysis of the body ofa person and displays the detected health problems. It is useful for doctors to view in 3D their patients and the evolution of a disease.",
-          year: 2012,
+          name: "Father and son",
+          type: "other",
+          desc: "Father and son in the desert praying with the moon in the background ",
+          year: 2021,
           url: "/img/b.png",
         },
         {
           id: "3",
-          name: "Multiple questions system",
-          type: "teaching",
-          desc: "During the lockdowns in France, this project was useful to test thestudents online with a Quizz system.",
-          year: 2021,
+          name: "Ai jungle",
+          type: "other",
+          desc: "exploring ai jungle ",
+          year: 2020,
           url: "/img/c.png",
         },
         {
           id: "4",
-          name: "Image comparison with the Local Dissmilarity Map",
-          desc: "The project is about finding and quantifying the differencesbetween two images of the same size. The applications were numerous: satallite imaging, medical imaging,...",
-          year: 2020,
-          type: "research",
+          name: "cool ai art",
+          desc: "man ai",
+          year: 2023,
+          type: "other",
           url: "/img/d.png",
         },
         {
           id: "5",
-          name: "Management system for students' internships",
-          desc: "This project was about the creation of a database to manage thestudents' internships.",
-          year: 2012,
-          type: "teaching",
+          name: "cyberpunk cowboy",
+          desc: "cowboy in 2042",
+          year: 2023,
+          type: "other",
           url: "/img/e.png",
         },
       ];
@@ -380,7 +374,7 @@ db.run(
 
 // creates skills projects at startup
 db.run(
-  "CREATE TABLE skills (sid INTEGER PRIMARY KEY, sname TEXT NOT NULL, sdesc TEXT NOT NULL, stype TEXT NOT NULL)",
+  "CREATE TABLE IF NOT EXISTS skills (sid INTEGER PRIMARY KEY, sname TEXT NOT NULL, sdesc TEXT NOT NULL, stype TEXT NOT NULL)",
   (error) => {
     if (error) {
       // tests error: display error
@@ -391,57 +385,27 @@ db.run(
       const skills = [
         {
           id: "1",
-          name: "PHP",
+          name: "c++",
           type: "Programming language",
-          desc: "Programming with PHP on the server side.",
+          desc: "Programming software",
         },
         {
           id: "2",
-          name: "Python",
-          type: "Programming language",
-          desc: "Programming with Python.",
+          name: "Sql",
+          type: "Database Programming language",
+          desc: "Programming databases.",
         },
         {
           id: "3",
-          name: "Java",
+          name: "html/css/javascript",
           type: "Programming language",
-          desc: "Programming with Java.",
+          desc: "Programming websites",
         },
         {
           id: "4",
-          name: "ImageJ",
-          type: "Framework",
-          desc: "Java Framework for Image Processing.",
-        },
-        {
-          id: "5",
-          name: "Javascript",
-          type: "Programming language",
-          desc: "Programming with Javascript on the client side.",
-        },
-        {
-          id: "6",
-          name: "Node",
-          type: "Programming language",
-          desc: "Programming with Javascript on the server side.",
-        },
-        {
-          id: "7",
-          name: "Express",
-          type: "Framework",
-          desc: "A framework for programming Javascript on the server side.",
-        },
-        {
-          id: "8",
-          name: "Scikit-image",
-          type: "Library",
-          desc: "A library for Image Processing with Python.",
-        },
-        {
-          id: "9",
-          name: "OpenCV",
-          type: "Library",
-          desc: "A library for Image Processing with Python.",
+          name: "wix",
+          type: "website maker",
+          desc: "Making websites without coding",
         },
       ];
       // inserts skills
@@ -462,38 +426,35 @@ db.run(
   }
 );
 
-// creates table projectsSkills at startup
+// creates table LanguageSkills at startup
 db.run(
-  "CREATE TABLE projectsSkills (psid INTEGER PRIMARY KEY, pid INTEGER, sid INTEGER, FOREIGN KEY (pid) REFERENCES projects (pid),FOREIGN KEY (sid) REFERENCES skills (sid))",
+  "CREATE TABLE IF NOT EXISTS LanguageSkills (lgid INTEGER PRIMARY KEY, lname TEXT NOT NULL, lamount TEXT NOT NULL)",
   (error) => {
     if (error) {
       // tests error: display error
       console.log("ERROR: ", error);
     } else {
       // tests error: no error, the table has been created
-      console.log("---> Table projectsSkills created!");
-      const projectsSkills = [
-        { id: "1", pid: "1", sid: "2" },
-        { id: "2", pid: "1", sid: "8" },
-        { id: "3", pid: "1", sid: "9" },
-        { id: "4", pid: "2", sid: "3" },
-        { id: "5", pid: "2", sid: "4" },
-        { id: "6", pid: "3", sid: "1" },
-        { id: "7", pid: "4", sid: "2" },
-        { id: "8", pid: "4", sid: "8" },
-        { id: "9", pid: "4", sid: "9" },
-        { id: "10", pid: "5", sid: "1" },
+      console.log("---> Table LanguageSkills created!");
+      const LanguageSkills = [
+        { lgid: "1", lname: "Swedish", lamount: "fluent" },
+        { lgid: "2", lname: "English", lamount: "fluent" },
+        { lgid: "3", lname: "Albanian", lamount: "good" },
       ];
-      // inserts projectsSkills
-      projectsSkills.forEach((oneProjectSkill) => {
+      // inserts LanguageSkills
+      LanguageSkills.forEach((oneLanguageSkill) => {
         db.run(
-          "INSERT INTO projectsSkills (psid, pid, sid) VALUES (?, ?, ?)",
-          [oneProjectSkill.id, oneProjectSkill.pid, oneProjectSkill.sid],
+          "INSERT INTO LanguageSkills (lgid, lname, lamount) VALUES (?, ?, ?)",
+          [
+            oneLanguageSkill.lgid,
+            oneLanguageSkill.lname,
+            oneLanguageSkill.lamount,
+          ],
           (error) => {
             if (error) {
               console.log("ERROR: ", error);
             } else {
-              console.log("Line added into the projectsSkills table!");
+              console.log("Line added into the LanguageSkills table!");
             }
           }
         );

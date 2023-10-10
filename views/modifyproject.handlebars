@@ -1,39 +1,29 @@
-<div>
+<body class="projectbody">
     <h1>Modify Project</h1>
-    <div>
+     <div class="newprojectdiv">
         {{#if isLoggedIn}}
         {{#if isAdmin}}
-        <form action="/projects/update/{{project.pid}}" method="post">
-        <fieldset>
-            <label for="projname">Project name: </label>
-            <input type="text" name="projname" id="projname" value="{{project.name}}" required="required">
-            <br>
-            <label for="projyear">Project year: </label>
-            <input type="number" name="projyear" id="projyear" placeholder="2023" value="{{project.pyear}}" required="required">
-            <br>
-            <textarea name="projdesc" id="projdesc" placeholder="Description" cols="30" rows="10" required="required">{{project.pdesc}}</textarea>
-            <br>
-            <label for="projtype">Project type: </label>
-            <select name="projtype" id="projtype" required="required">
+        <form action="/projects/{{project.pid}}/update" method="post" class="newprojectform">
+            <input type="text" placeholder="Project name" name="projname" value="{{project.name}}" required="required">
+            <input type="number" name="projyear"  placeholder="Project year: 2023" value="{{project.pyear}}" required="required">
+            <textarea name="projdesc" placeholder="Description" cols="30" rows="10" required="required">{{project.pdesc}}</textarea>
+            <select name="projtype"  required="required">
                 <option value="Research"{{#if (theTypeR project.ptype)}} selected="selected"{{/if}}>Research</option>
                 <option value="Teaching"{{#if (theTypeT project.ptype)}} selected="selected"{{/if}}>Teaching</option>
                 <option value="Other"{{#if (theTypeO project.ptype)}} selected="selected"{{/if}}>Other</option>
             </select>
-            <br>
-            <label for="projing">Project image URL: </label>
-            <input type="text" name="projimg" id="projimg" placeholder="/img/" value="{{project.pimgURL}}" required="required">
-            <br>
-        </fieldset>
-        <input type="submit" value="Add project">
+            <input type="text" name="projimg" placeholder="/img/" value="{{project.pimgURL}}" required="required">
+        <input type="submit" value="Modify project" class="addproject">
         </form>
         {{else}}
-        <p>Sorry, you must be an admin to add a new project!</p>
+        <h1>Sorry, you must be an admin to add a new project!</h1>
         {{/if}}
         {{else}}
-        <p>
+        <h2>
             Sorry, you must be logged in to add a new project! <br>
             Please go to the <a href="/login">login</a> page.
-        </p>
+        </h2>
         {{/if}}
     </div>
-</div>
+</body>
+

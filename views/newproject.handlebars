@@ -1,39 +1,54 @@
-<div>
+<body class="projectbody">
     <h1>New project</h1>
-    <div>
-        {{#if isLoggedIn}}
+    <div class="newprojectdiv">
+      {{#if isLoggedIn}}
         {{#if isAdmin}}
-        <form action="/projects/new" method="post">
-        <fieldset>
-            <label for="projname">Project name: </label>
-            <input type="text" name="projname" id="projname" required="required">
-            <br>
-            <label for="projyear">Project year: </label>
-            <input type="number" name="projyear" id="projyear" placeholder="2023" required="required">
-            <br>
-            <textarea name="projdesc" id="projdesc" placeholder="Description" cols="30" rows="10" required="required"></textarea>
-            <br>
-            <label for="projtype">Project type: </label>
-            <select name="projtype" id="projtype" required="required">
+          <form action="/projects/new" method="post" class="newprojectform">
+              <input
+              placeholder="Project name"
+                type="text"
+                name="projname"
+                required="required"
+              />
+              <input
+                type="number"
+                name="projyear"
+                placeholder="Project year: 2023"
+                required="required"
+              />
+              <textarea
+                name="projdesc"
+                id="projdesc"
+                placeholder="Description"
+                cols="30"
+                rows="10"
+                required="required"
+              ></textarea>
+              <select name="projtype" required="required">
                 <option value="Research">Research</option>
                 <option value="Education">Education</option>
                 <option value="Other">Other</option>
-            </select>
-            <br>
-            <label for="projing">Project image URL: </label>
-            <input type="text" name="projing" id="projing" placeholder="/img/" required="required">
-            <br>
-        </fieldset>
-        <input type="submit" value="Add project">
-        </form>
+              </select>
+              <input
+                type="text"
+                name="projimg"
+                id="projimg"
+                placeholder="Project URL: /img/"
+                required="required"
+              />
+            <input type="submit" value="Add project" class="addproject" />
+          </form>
         {{else}}
-        <p>Must be administrator to add a new project!</p>
+          <h1>Must be administrator to add a new project!</h1>
         {{/if}}
-        {{else}}
-        <p>
-            Must be logged in to add a new project! <br>
-            Please go to the <a href="/login">login</a> page.
-        </p>
-        {{/if}}
+      {{else}}
+        <h2>
+          Must be logged in to add a new project!
+          <br />
+          Please go to the
+          <a href="/login">login</a>
+          page.
+        </h2>
+      {{/if}}
     </div>
-</div>
+</body>

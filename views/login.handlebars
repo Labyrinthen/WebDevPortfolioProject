@@ -1,15 +1,11 @@
-  <h1>Log in</h1>
-  <div>
+<body class="loginbody">
+  
+  <h1>Welcome to the login page!</h1>
 
-    <form action="/login" method="post">
-      <fieldset>
-        <label for="un">Username: </label>
-        <input type="text" name="un" id="un" required="required" />
-        <br />
-        <label for="pw">Password: </label>
-        <input type="password" name="pw" id="pw" required="required" />
-        <br />
-      </fieldset>
-      <input type="submit" value="Login" />
-    </form>
-  </div>
+    <form action="/login" method="post" class="logindiv">
+        <input type="text" name="un" id="un" placeholder="Username" required="required" />
+        <input type="password" name="pw" id="pw" placeholder="*******" required="required" />
+        <input class="loginbutton" type="submit" value="Login"/>
+    </form> 
+
+</body>
