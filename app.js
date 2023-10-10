@@ -107,7 +107,7 @@ app.get("/projects", (req, res) => {
   });
 });
 
-app.post("/projects/:id/delete", (req, res) => {
+app.post("/projects/delete/:id", (req, res) => {
   const id = req.params.id;
   if (req.session.isLoggedIn == true && req.session.isAdmin == true) {
     db.run(
@@ -147,7 +147,7 @@ app.get("/projects/new", (req, res) => {
   }
 });
 
-app.post("/projects/new", (req, res) => {
+app.get("/projects/new", (req, res) => {
   console.log("Request Body:", req.body);
   const newp = [
     req.body.projname,
@@ -174,52 +174,48 @@ app.post("/projects/new", (req, res) => {
   }
 });
 
-app.post("/projects/:id/update", (req, res) => {
+app.get("/projects/update/:id", (req, res) => {
   const id = req.params.id;
-  db.get(
-    "SELECT * FROM projects WHERE pid=?",
-    [id],
-    function (error, theProject) {
-      if (error) {
-        console.log("ERROR: ", error);
-        const model = {
-          dbError: true,
-          theError: error,
-          project: {},
-          isLoggedIn: req.session.isLoggedIn,
-          name: req.session.name,
-          isAdmin: req.session.isAdmin,
-        };
-        res.render("modifyproject.handlebars", model);
-      } else {
-        const model = {
-          dbError: false,
-          theError: "",
-          project: theProject,
-          isLoggedIn: req.session.isLoggedIn,
-          name: req.session.name,
-          isAdmin: req.session.isAdmin,
-          helpers: {
-            theTypeR(value) {
-              return value == "Research";
-            },
-            theTypeT(value) {
-              return value == "Teaching";
-            },
-            theTypeO(value) {
-              return value == "Other";
-            },
+  db.get("SELECT * FROM projects WHERE pid=?", [id], (error, theProject) => {
+    if (error) {
+      console.log("ERROR: ", error);
+      const model = {
+        dbError: true,
+        theError: error,
+        projects: {},
+        isLoggedIn: req.session.isLoggedIn,
+        name: req.session.name,
+        isAdmin: req.session.isAdmin,
+      };
+      res.render("modifyproject.handlebars", model);
+    } else {
+      const model = {
+        dbError: false,
+        theError: "",
+        project: theProject,
+        isLoggedIn: req.session.isLoggedIn,
+        name: req.session.name,
+        isAdmin: req.session.isAdmin,
+        helpers: {
+          theTypeR(value) {
+            return value == "Reasearch";
           },
-        };
-        res.render("modifyproject.handlebars", model);
-      }
+          theTypeT(value) {
+            return value == "Teaching";
+          },
+          theTypeO(value) {
+            return value == "Other";
+          },
+        },
+      };
+      res.render("modifyproject.handlebars", model);
     }
-  );
+  });
 });
 
-app.post("/projects/:id/update", (req, res) => {
+app.post("/projects/update/:id", (req, res) => {
   const id = req.params.id;
-  const newp = [
+  const updatedData = [
     req.body.projname,
     req.body.projyear,
     req.body.projdesc,
@@ -227,24 +223,24 @@ app.post("/projects/:id/update", (req, res) => {
     req.body.projimg,
     id,
   ];
-  if (req.session.isLoggedIn == true && req.session.isAdmin == true) {
+  if (req.session.isLoggedIn && req.session.isAdmin) {
     db.run(
       "UPDATE projects SET pname=?, pyear=?, pdesc=?, ptype=?, pimgURL=? WHERE pid=?",
-      newp,
+      updatedData,
       (error) => {
         if (error) {
           console.log("ERROR: ", error);
+          // You might want to add more error handling here.
+          res.redirect("/projects");
         } else {
-          console.log("Project updated!");
+          res.redirect("/projects");
         }
-        res.redirect("/projects");
       }
     );
   } else {
     res.redirect("/login");
   }
 });
-
 app.get("/contact", (req, res) => {
   const model = {
     isLoggedIn: req.session.isLoggedIn,

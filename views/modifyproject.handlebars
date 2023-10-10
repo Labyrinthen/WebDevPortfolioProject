@@ -3,8 +3,8 @@
      <div class="newprojectdiv">
         {{#if isLoggedIn}}
         {{#if isAdmin}}
-        <form action="/projects/{{project.pid}}/update" method="post" class="newprojectform">
-            <input type="text" placeholder="Project name" name="projname" value="{{project.name}}" required="required">
+        <form action="/projects/update/{{project.pid}}" method="POST" class="newprojectform">
+            <input type="text" placeholder="Project name" name="projname" value="{{project.pname}}" required="required">
             <input type="number" name="projyear"  placeholder="Project year: 2023" value="{{project.pyear}}" required="required">
             <textarea name="projdesc" placeholder="Description" cols="30" rows="10" required="required">{{project.pdesc}}</textarea>
             <select name="projtype"  required="required">
@@ -13,7 +13,7 @@
                 <option value="Other"{{#if (theTypeO project.ptype)}} selected="selected"{{/if}}>Other</option>
             </select>
             <input type="text" name="projimg" placeholder="/img/" value="{{project.pimgURL}}" required="required">
-        <input type="submit" value="Modify project" class="addproject">
+            <input type="submit" value="Modify project" class="addproject">
         </form>
         {{else}}
         <h1>Sorry, you must be an admin to add a new project!</h1>

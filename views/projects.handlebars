@@ -22,11 +22,11 @@
           <div class="modifydeletediv">
             {{#if ../isAdmin}}
 
-              <form action="/projects/{{pid}}/update" method="post">
+              <form action="/projects/update/{{pid}}" method="get">
                 <input type="submit" value="Modify" class="modifydeletetext">
               </form> 
 
-              <form action="/projects/{{pid}}/delete" method="post" >
+              <form action="/projects/delete/{{pid}}" method="post" >
                 <input type="submit" value="Delete" class="modifydeletetext">
               </form> 
             {{/if}}
@@ -37,8 +37,6 @@
           <div class="nameyear"><p class="nameyeartext">{{pname}} ({{pyear}})  -  {{ptype}}</p></div>
 
         </div>
-   
-
     {{/each}}
    </div>
   {{/if}}
