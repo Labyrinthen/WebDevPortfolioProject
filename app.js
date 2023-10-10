@@ -147,7 +147,7 @@ app.get("/projects/new", (req, res) => {
   }
 });
 
-app.get("/projects/new", (req, res) => {
+app.post("/projects/new", (req, res) => {
   console.log("Request Body:", req.body);
   const newp = [
     req.body.projname,
