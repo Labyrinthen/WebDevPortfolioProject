@@ -7,12 +7,29 @@
     <div class="pic"></div>
 
     <div class="textdiv">
+      <h1 class="aboutmeheader">Experience</h1>
       <h2 class="aboutmetext">
-        I am a software engineering student with experience in developing web
-        applications using Python, Java, and JavaScript. I am proficient in HTML
-        & CSS and have worked with popular frameworks such as Django and React.
-        I have experience using Git and other development tools.
+        IKEA Lagerarbetare
+        <br />
+        Jönköping
+        <br />
+        2022 - 2022
+        <br />
+        Order plockare med plocktruck
+        <br /><br />
+        H&M Lagerarbetare <br> Borås <br> 2021 - 2022 <br> Order plockare vid olika stationer
+        <br /><br />
+        TIER Ranger Borås <br> 2021 - 2021 <br> Batteri byte och flytt av el scootrar,
+        skåpbilskörning
       </h2>
+    </div>
+    <div class="textdiv">
+      <h1 class="aboutmeheader">Languages</h1>
+      <br />
+      {{#each LanguageSkills}}
+        <h2 class="aboutmetext">{{lname}} - {{lamount}}</h2>
+      {{/each}}
+
     </div>
 
   </div>
