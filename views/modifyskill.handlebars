@@ -1,0 +1,52 @@
+<body class="aboutbody">
+  <h1>Modify SKill!</h1>
+  <div class="newprojectdiv">
+    {{#if isLoggedIn}}
+      {{#if isAdmin}}
+        <form action="/skills/{{skill.sid}}" method="POST" class="newprojectform">
+  <input
+    type="text"
+    name="sname"
+    value="{{skill.sname}}"
+    placeholder="Skill name"
+    required="required"
+  />
+  <input
+    type="number"
+    name="experience_years"
+    value="{{skill.experience_years}}"
+    placeholder="experience years: 2"
+    required="required"
+  />
+  <textarea
+    name="sdesc"
+    placeholder="Description"
+    cols="30"
+    rows="5"
+  >{{skill.sdesc}}</textarea>
+  <select name="stype" required="required">
+  <option value="Programming" {{#if (theTypeP skill.stype "Programming")}}selected{{/if}}>Programming</option>
+  <option value="Irl" {{#if (theTypeI skill.stype "Irl")}}selected{{/if}}>Irl</option>
+  <option value="General" {{#if (theTypeG skill.stype "General")}}selected{{/if}}>General</option>
+</select>
+<select name="proficiency_level" required="required">
+  <option value="Beginner" {{#if (theTypeB skill.proficiency_level "Beginner")}}selected{{/if}}>Beginner</option>
+  <option value="Intermediete" {{#if (theTypeIn skill.proficiency_level "Intermediete")}}selected{{/if}}>Intermediete</option>
+  <option value="Expert" {{#if (theTypeE skill.proficiency_level "Expert")}}selected{{/if}}>Expert</option>
+</select>
+<input type="submit" value="Modify Skill" class="addproject" />
+</form>
+      {{else}}
+        <h1>Must be administrator to add a new Skill!</h1>
+      {{/if}}
+    {{else}}
+      <h2>
+        Must be logged in to add a new Skill!
+        <br />
+        Please go to the
+        <a href="/login">login</a>
+        page.
+      </h2>
+    {{/if}}
+  </div>
+</body>

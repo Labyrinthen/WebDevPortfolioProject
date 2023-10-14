@@ -18,6 +18,18 @@ const sqlite3 = require("sqlite3");
 const { error } = require("console");
 const bcrypt = require("bcrypt");
 
+// Import the handlebars package
+const handlebars = require("handlebars");
+
+// Register the "gt" (greater than) helper
+handlebars.registerHelper("gt", function (a, b, options) {
+  if (a > b) {
+    return options.fn(this);
+  } else {
+    return options.inverse(this);
+  }
+});
+
 // defines handlebars engine
 app.engine("handlebars", engine());
 // defines the view engine to be handlebars
@@ -57,16 +69,6 @@ const db = new sqlite3.Database("PORTFOLIOWEBSITE-LI.db");
 // defines routes "/"
 app.get("/", (req, res) => {
   console.log("SESSION: ", req.session);
-
-  // saltRounds = 12
-  // bcrypt.hash("i", saltRounds, function(err, hash){
-  //   if(err) {
-  //     console.log("Error encrypting the password: ", err)
-  //   } else{
-  //     console.log("Hashed password (GENERATE only ONCE): ", hash)
-  //   }
-  // });
-
   const model = {
     isLoggedIn: req.session.isLoggedIn,
     name: req.session.name,
@@ -84,21 +86,219 @@ app.get("/logout", (req, res) => {
   });
 });
 
-app.get("/about", (req, res) => {
-  db.all("SELECt * FROM LanguageSkills", (error, languageskils) => {
+app.get("/skills/create", (req, res) => {
+  if (req.session.isLoggedIn == true && req.session.isAdmin == true) {
+    const model = {
+      isLoggedIn: req.session.isLoggedIn,
+      name: req.session.name,
+      isAdmin: req.session.isAdmin,
+      session,
+    };
+    res.render("newskill.handlebars", model);
+  } else {
+    res.redirect("/login");
+  }
+});
+
+
+app.post("/skills/create", (req, res) => {
+  // Check if the user is logged in and is an admin
+  if (req.session.isLoggedIn && req.session.isAdmin) {
+    // Access the values from req.body
+    const sname = req.body.sname;
+    const sdesc = req.body.sdesc;
+    const stype = req.body.stype;
+    const proficiency_level = req.body.proficiency_level;
+    const experience_years = req.body.experience_years;
+
+    // Create a new skill object with the values
+    const newSkill = {
+      sname,
+      sdesc,
+      stype,
+      proficiency_level,
+      experience_years,
+    };
+
+    // Insert the new skill into the "skills" table in the database.
+    db.run(
+      "INSERT INTO skills (sname, sdesc, stype, proficiency_level, experience_years) VALUES (?, ?, ?, ?, ?)",
+      [
+        newSkill.sname,
+        newSkill.sdesc,
+        newSkill.stype,
+        newSkill.proficiency_level,
+        newSkill.experience_years,
+      ],
+      (error) => {
+        if (error) {
+          console.error("Error creating a new skill:", error);
+          res.status(500).json({ error: "Failed to create a new skill" });
+        } else {
+          console.log("New skill created successfully.");
+          // Redirect the user after creating the skill
+          res.redirect("/about");
+        }
+      }
+    );
+  } else {
+    res.redirect("/login");
+  }
+});
+
+app.get("/skills/update/:id", (req, res) => {
+  const id = req.params.id;
+  db.get("SELECT * FROM skills WHERE sid=?", [id], (error, theSkill) => {
     if (error) {
-      console.error("Error fetching Languageskills: ", error);
-      res.status(500).send("Error fetching Languageskills");
-    } else {
+      console.log("ERROR: ", error);
       const model = {
+        dbError: true,
+        theError: error,
+        skill: {},
         isLoggedIn: req.session.isLoggedIn,
         name: req.session.name,
         isAdmin: req.session.isAdmin,
-        LanguageSkills: languageskils,
       };
-      res.render("about.handlebars", model); // Pass the model to the template
+      res.render("modifyskill.handlebars", model);
+    } else {
+      const model = {
+        dbError: false,
+        theError: "",
+        skill: theSkill,
+        isLoggedIn: req.session.isLoggedIn,
+        name: req.session.name,
+        isAdmin: req.session.isAdmin,
+        helpers: {
+          theTypeP(value) {
+            return value == "Programming";
+          },
+          theTypeI(value) {
+            return value == "Irl";
+          },
+          theTypeG(value) {
+            return value == "General";
+          },
+          theTypeB(value) {
+            return value == "Beginner";
+          },
+          theTypeIn(value) {
+            return value == "Intermediete";
+          },
+          theTypeE(value) {
+            return value == "Expert";
+          },
+        },
+      };
+      res.render("modifyskill.handlebars", model);
     }
   });
+});
+
+app.put("/skills/:sid", (req, res) => {
+  const skillId = req.params.sid;
+  const { sname, sdesc, stype, proficiency_level, experience_years } = req.body;
+
+  // Update the skill in the "skills" table in the database.
+  db.run(
+    "UPDATE skills SET sname = ?, sdesc = ?, stype = ?, proficiency_level = ?, experience_years = ? WHERE sid = ?",
+    [sname, sdesc, stype, proficiency_level, experience_years, skillId],
+    (error) => {
+      if (error) {
+        console.error("Error updating the skill: ", error);
+        res.redirect("/about"); 
+      } else {
+        console.log("Skill updated successfully.");
+        res.redirect("/about");
+      }
+    }
+  );
+});
+
+
+app.delete("/skills/:sid", (req, res) => {
+  const skillId = req.params.sid;
+
+  // Delete the skill from the "skills" table in the database.
+  db.run("DELETE FROM skills WHERE sid = ?", [skillId], (error) => {
+    if (error) {
+      console.error("Error deleting the skill: ", error);
+      res.status(500).json({ error: "Failed to delete the skill" });
+    } else {
+      console.log("Skill deleted successfully.");
+      res.status(200).json({ message: "Skill deleted successfully" });
+    }
+  });
+});
+
+app.get("/about", (req, res) => {
+  // Fetch skills
+  db.all("SELECT * FROM skills", (skillsError, skills) => {
+    if (skillsError) {
+      console.error("Error fetching skills: ", skillsError);
+      res.status(500).send("Error fetching skills");
+    } else {
+      // Fetch language skills
+      db.all(
+        "SELECT * FROM LanguageSkills",
+        (languageSkillsError, languageSkills) => {
+          if (languageSkillsError) {
+            console.error(
+              "Error fetching language skills: ",
+              languageSkillsError
+            );
+            res.status(500).send("Error fetching language skills");
+          } else {
+            const model = {
+              isLoggedIn: req.session.isLoggedIn,
+              name: req.session.name,
+              isAdmin: req.session.isAdmin,
+              Skills: skills,
+              LanguageSkills: languageSkills,
+            };
+            res.render("about.handlebars", model); // Pass the model to the template
+          }
+        }
+      );
+    }
+  });
+});
+
+
+
+app.post("/skills/create", (req, res) => {
+  const { sname, sdesc, stype, proficiency_level, experience_years } = req.body;
+
+  const newSkill = {
+    sname,
+    sdesc,
+    stype,
+    proficiency_level,
+    experience_years,
+  };
+
+  // Insert the new skill into the "skills" table in the database.
+  if (req.session.isLoggedIn == true && req.session.isAdmin == true) {
+    db.run(
+      "INSERT INTO skills (sname, sdesc, stype, proficiency_level, experience_years) VALUES (?, ?, ?, ?, ?)",
+      [
+        newSkill.sname,
+        newSkill.sdesc,
+        newSkill.stype,
+        newSkill.proficiency_level,
+        newSkill.experience_years,
+      ],
+      (error) => {
+        if (error) {
+          console.error("Error creating a new skill:", error);
+          res.status(500).json({ error: "Failed to create a new skill" });
+        } else {
+          console.log("New skill created successfully.");
+          res.status(201).json({ message: "Skill created successfully" });
+        }
+        res.redirect("/about");
+      }
+    );
+  }
 });
 
 app.get("/projects", (req, res) => {
@@ -126,6 +326,61 @@ app.get("/projects", (req, res) => {
     }
   });
 });
+
+// app.get("/projects/page/:page", (req, res) => {
+//   const itemsPerPage = 4; // Define the number of projects to display per page
+//   const page = parseInt(req.params.page);
+//   if (isNaN(page) || page < 1) {
+//     res.redirect("/projects/page/1"); // Redirect to the first page if an invalid page number is provided
+//     return;
+//   }
+
+//   // Calculate the offset to skip the right number of projects from the database
+//   const offset = (page - 1) * itemsPerPage;
+
+//   db.all(
+//     "SELECT * FROM projects LIMIT ? OFFSET ?",
+//     [itemsPerPage, offset],
+//     (error, theProjects) => {
+//       if (error) {
+//         const model = {
+//           hasDatabaseError: true,
+//           theError: error,
+//           projects: [],
+//           isLoggedIn: req.session.isLoggedIn,
+//           name: req.session.name,
+//           isAdmin: req.session.isAdmin,
+//         };
+//         res.render("projects-paginated.handlebars", model); // Render the paginated template
+//       } else {
+//         // Fetch the total number of projects
+//         db.get("SELECT COUNT(*) as count FROM projects", (error, result) => {
+//           if (error) {
+//             // Handle the error
+//           } else {
+//             const totalProjects = result.count;
+//             // Calculate the total number of pages
+//             const totalPages = Math.ceil(totalProjects / itemsPerPage);
+
+//             const model = {
+//               hasDatabaseError: false,
+//               theError: "",
+//               projects: theProjects,
+//               currentPage: page,
+//               itemsPerPage,
+//               totalProjects,
+//               totalPages,
+//               isLoggedIn: req.session.isLoggedIn,
+//               name: req.session.name,
+//               isAdmin: req.session.isAdmin,
+//             };
+//             res.render("projects-paginated.handlebars", model); // Render the paginated template
+//           }
+//         });
+//       }
+//     }
+//   );
+// });
 
 app.post("/projects/delete/:id", (req, res) => {
   const id = req.params.id;
@@ -305,49 +560,52 @@ app.post("/registration", (req, res) => {
   const role = req.body.role; // Get the selected role
 
   // Check if the user already exists
-  db.get("SELECT username FROM users WHERE username = ?", [un], (error, existingUser) => {
-    if (error) {
-      console.error("Error checking for existing user: ", error);
-      res.redirect("/registration"); // Handle registration failure
-    } else if (existingUser) {
-      console.log("User already exists.");
-      // Handle the case where the user already exists (e.g., display an error message)
-      res.redirect("/registration"); // Redirect back to the registration page
-    } else {
-      // Generate a salt
-      bcrypt.genSalt(12, function (saltError, salt) {
-        if (saltError) {
-          console.log("Error generating salt: ", saltError);
-          res.redirect("/registration"); // Handle registration failure
-        } else {
-          // Hash the user's password with the generated salt
-          bcrypt.hash(pw, salt, function (hashError, hash) {
-            if (hashError) {
-              console.log("Error in hashing password: ", hashError);
-              res.redirect("/registration"); // Handle registration failure
-            } else {
-              // Store the hashed password and role in the users table
-              db.run(
-                "INSERT INTO users (username, password, role) VALUES (?, ?, ?)",
-                [un, hash, role],
-                (insertError) => {
-                  if (insertError) {
-                    console.log("Error inserting user data: ", insertError);
-                    res.redirect("/registration"); // Handle registration failure
-                  } else {
-                    console.log("User registered and password hashed!");
-                    res.redirect("/login"); // Redirect to the login page after successful registration
+  db.get(
+    "SELECT username FROM users WHERE username = ?",
+    [un],
+    (error, existingUser) => {
+      if (error) {
+        console.error("Error checking for existing user: ", error);
+        res.redirect("/registration"); // Handle registration failure
+      } else if (existingUser) {
+        console.log("User already exists.");
+        // Handle the case where the user already exists (e.g., display an error message)
+        res.redirect("/registration"); // Redirect back to the registration page
+      } else {
+        // Generate a salt
+        bcrypt.genSalt(12, function (saltError, salt) {
+          if (saltError) {
+            console.log("Error generating salt: ", saltError);
+            res.redirect("/registration"); // Handle registration failure
+          } else {
+            // Hash the user's password with the generated salt
+            bcrypt.hash(pw, salt, function (hashError, hash) {
+              if (hashError) {
+                console.log("Error in hashing password: ", hashError);
+                res.redirect("/registration"); // Handle registration failure
+              } else {
+                // Store the hashed password and role in the users table
+                db.run(
+                  "INSERT INTO users (username, password, role) VALUES (?, ?, ?)",
+                  [un, hash, role],
+                  (insertError) => {
+                    if (insertError) {
+                      console.log("Error inserting user data: ", insertError);
+                      res.redirect("/registration"); // Handle registration failure
+                    } else {
+                      console.log("User registered and password hashed!");
+                      res.redirect("/login"); // Redirect to the login page after successful registration
+                    }
                   }
-                }
-              );
-            }
-          });
-        }
-      });
+                );
+              }
+            });
+          }
+        });
+      }
     }
-  });
+  );
 });
-
 
 // POST route for user login
 app.post("/login", (req, res) => {
@@ -389,8 +647,6 @@ app.post("/login", (req, res) => {
   );
 });
 
-
-
 // defines the final default route 404 NOT FOUND
 app.use(function (req, res) {
   res.status(404).render("404.handlebars");
@@ -400,8 +656,6 @@ app.use(function (req, res) {
 app.listen(port, () => {
   console.log(`Server running and listening on port ${port}...`);
 });
-
-
 
 // creates table projects at startup
 
@@ -468,7 +722,7 @@ db.run(
 
 // creates skills at startup
 db.run(
-  "CREATE TABLE IF NOT EXISTS skills (sid INTEGER PRIMARY KEY AUTOINCREMENT, sname TEXT NOT NULL, sdesc TEXT NOT NULL, stype TEXT NOT NULL)",
+  "CREATE TABLE IF NOT EXISTS skills (sid INTEGER PRIMARY KEY AUTOINCREMENT, sname TEXT NOT NULL, sdesc TEXT NOT NULL, stype TEXT NOT NULL, proficiency_level TEXT NOT NULL, experience_years INTEGER NOT NULL)",
   (error) => {
     if (error) {
       // tests error: display error
@@ -481,11 +735,15 @@ db.run(
           name: "c++",
           type: "Programming language",
           desc: "Programming software",
+          proficiency_level: "intermediete",
+          experience_years: 1,
         },
         {
           name: "Sql",
           type: "Database Programming language",
           desc: "Programming databases.",
+          proficiency_level: "intermediete",
+          experience_years: 1,
         },
       ];
 
@@ -512,8 +770,14 @@ db.run(
             if (!exists) {
               // Only insert the skill if it doesn't already exist
               db.run(
-                "INSERT INTO skills (sname, sdesc, stype) VALUES (?, ?, ?)",
-                [oneSkill.name, oneSkill.desc, oneSkill.type],
+                "INSERT INTO skills (sname, sdesc, stype, proficiency_level, experience_years) VALUES (?, ?, ?, ?, ?)",
+                [
+                  oneSkill.name,
+                  oneSkill.desc,
+                  oneSkill.type,
+                  oneSkill.proficiency_level,
+                  oneSkill.experience_years,
+                ],
                 (insertError) => {
                   if (insertError) {
                     console.log("ERROR: ", insertError);
@@ -534,7 +798,7 @@ db.run(
 
 // creates table LanguageSkills at startup
 db.run(
-  "CREATE TABLE IF NOT EXISTS LanguageSkills (lgid INTEGER PRIMARY KEY AUTOINCREMENT, lname TEXT NOT NULL, lamount TEXT NOT NULL)",
+  "CREATE TABLE IF NOT EXISTS LanguageSkills (lgid INTEGER PRIMARY KEY AUTOINCREMENT, lname TEXT NOT NULL, proficiency_level TEXT NOT NULL, language_type TEXT NOT NULL, notes TEXT NOT NULL)",
   (error) => {
     if (error) {
       // tests error: display error
@@ -543,9 +807,24 @@ db.run(
       // tests error: no error, the table has been created
       console.log("---> Table LanguageSkills created!");
       const LanguageSkills = [
-        { lname: "Swedish", lamount: "fluent" },
-        { lname: "English", lamount: "fluent" },
-        { lname: "Albanian", lamount: "good" },
+        {
+          lname: "Swedish",
+          proficiency_level: "fluent",
+          language_type: "Spoken language",
+          notes: "least favorite",
+        },
+        {
+          lname: "English",
+          proficiency_level: "fluent",
+          language_type: "Spoken language",
+          notes: "is good",
+        },
+        {
+          lname: "Albanian",
+          proficiency_level: "good",
+          language_type: "Spoken language",
+          notes: "thats a poggers",
+        },
       ];
 
       function languageSkillExists(skill, callback) {
@@ -572,8 +851,13 @@ db.run(
             if (!exists) {
               // Only insert the language skill if it doesn't already exist
               db.run(
-                "INSERT INTO LanguageSkills (lname, lamount) VALUES (?, ?)",
-                [oneLanguageSkill.lname, oneLanguageSkill.lamount],
+                "INSERT INTO LanguageSkills (lname, proficiency_level, language_type, notes) VALUES (?, ?, ?, ?)",
+                [
+                  oneLanguageSkill.lname,
+                  oneLanguageSkill.proficiency_level,
+                  oneLanguageSkill.language_type,
+                  oneLanguageSkill.notes,
+                ],
                 (insertError) => {
                   if (insertError) {
                     console.log("ERROR: ", insertError);

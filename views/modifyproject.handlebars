@@ -6,7 +6,7 @@
         <form action="/projects/update/{{project.pid}}" method="POST" class="newprojectform">
             <input type="text" placeholder="Project name" name="projname" value="{{project.pname}}" required="required">
             <input type="number" name="projyear"  placeholder="Project year: 2023" value="{{project.pyear}}" required="required">
-            <textarea name="projdesc" placeholder="Description" cols="30" rows="10" required="required">{{project.pdesc}}</textarea>
+            <textarea name="projdesc" placeholder="Description" cols="30" rows="10">{{project.pdesc}}</textarea>
             <select name="projtype"  required="required">
                 <option value="Research"{{#if (theTypeR project.ptype)}} selected="selected"{{/if}}>Research</option>
                 <option value="Teaching"{{#if (theTypeT project.ptype)}} selected="selected"{{/if}}>Teaching</option>

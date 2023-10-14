@@ -1,0 +1,48 @@
+<body class="projectbody">
+  <h1>My Projects</h1>
+
+  {{#if isAdmin}}
+    <a href="/projects/new" class="centered-link">New Project</a>
+  {{/if}}
+
+{{#if hasDatabaseError}}
+    Sorry, there was a problem with the database:<br/>
+    {{theError}}
+  {{else}}
+    <div class="projectsdiv">
+      {{#each projects}}
+       <div class="projectboxframe">
+
+          <div class="modifydeletediv">
+            {{#if ../isAdmin}}
+
+              <form action="/projects/update/{{pid}}" method="get">
+                <input type="submit" value="Modify" class="modifydeletetext">
+              </form> 
+
+              <form action="/projects/delete/{{pid}}" method="post" >
+                <input type="submit" value="Delete" class="modifydeletetext">
+              </form> 
+            {{/if}}
+          </div>
+          <div class="projectphoto">
+          <img src="{{pimgURL}}" alt="{{pimgURL}}" class="projectimg"/>
+          </div>
+          <div class="nameyear"><p class="nameyeartext">{{pname}} ({{pyear}})  -  {{ptype}}</p></div>
+
+        </div>
+      {{/each}}
+
+     <!-- Pagination Links -->
+<div class="pagination">
+  {{#if (gt currentPage 1)}}
+    <a href="/projects/page/{{dec currentPage}}">Previous</a>
+  {{/if}}
+
+  {{#if (lt (add currentPage 1) totalPages)}}
+    <a href="/projects/page/{{add currentPage 1}}">Next</a>
+  {{/if}}
+</div>
+
+{{/if}}
+</body>

@@ -2,35 +2,55 @@
 
   <h1 class="aboutme">About me</h1>
 
-  <div class="picandtext">
+<div class="picandtext">
 
     <div class="pic"></div>
 
     <div class="textdiv">
-      <h1 class="aboutmeheader">Experience</h1>
-      <h2 class="aboutmetext">
-        IKEA Lagerarbetare
-        <br />
-        Jönköping
-        <br />
-        2022 - 2022
-        <br />
-        Order plockare med plocktruck
-        <br /><br />
-        H&M Lagerarbetare <br> Borås <br> 2021 - 2022 <br> Order plockare vid olika stationer
-        <br /><br />
-        TIER Ranger Borås <br> 2021 - 2021 <br> Batteri byte och flytt av el scootrar,
-        skåpbilskörning
-      </h2>
-    </div>
-    <div class="textdiv">
-      <h1 class="aboutmeheader">Languages</h1>
-      <br />
-      {{#each LanguageSkills}}
-        <h2 class="aboutmetext">{{lname}} - {{lamount}}</h2>
+      <h1 class="aboutmeheader">Skills</h1>
+      {{#if isAdmin}}
+      <form action="/skills/create" method="get">
+          <input type="submit" value="New Skill" class="loginbutton">
+      </form> 
+      {{/if}}
+      
+        
+ {{#if skillsError}}
+    Sorry, there was a problem with the database:<br/>
+    {{theError}}
+  {{else}}
+      {{#each Skills}}
+ <h2 class="aboutmetext">
+  <div class="modifydeletediv1">
+            {{#if ../isAdmin}}
+            
+              <form action="/skills/update/{{sid}}" method="get">
+                <input type="submit" value="Modify" class="modifydeletetext">
+              </form> 
+
+              <form action="/skills/delete/{{sid}}" method="get" >
+                <input type="submit" value="Delete" class="modifydeletetext">
+              </form> 
+           
+            {{/if}}
+            {{sname}} - {{proficiency_level}}
+ </div>
+
       {{/each}}
+      </h2>
+    
+    
 
-    </div>
+</div>
+<div class="textdiv">
+      <h1 class="aboutmeheader">Languages</h1>
+      <div class="langdiv">
+      {{#each LanguageSkills}}
+        <h2 class="aboutmetext">{{lname}} - {{proficiency_level}}</h2>
+      {{/each}}
+      </div>
 
-  </div>
+</div>
+</div>
+{{/if}}
 </body>

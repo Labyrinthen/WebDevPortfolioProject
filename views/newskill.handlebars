@@ -1,0 +1,50 @@
+<body class="aboutbody">
+  <h1>New SKill!</h1>
+  <div class="newprojectdiv">
+    {{#if isLoggedIn}}
+      {{#if isAdmin}}
+        <form action="/skills/create" method="post" class="newprojectform">
+          <input
+            placeholder="Skill name"
+            type="text"
+            name="sname"
+            required="required"
+          />
+          <input
+            type="number"
+            name="experience_years"
+            placeholder="experience years: 2"
+            required="required"
+          />
+          <textarea
+            name="sdesc"
+            placeholder="Description"
+            cols="30"
+            rows="5"
+          ></textarea>
+          <select name="stype" required="required">
+            <option value="Programming">Programming</option>
+            <option value="Irl">Irl</option>
+            <option value="General">General</option>
+          </select>
+          <select name="proficiency_level" required="required">
+            <option value="Beginner">Beginner</option>
+            <option value="Intermediete">Intermediete</option>
+            <option value="Expert">Expert</option>
+          </select>
+          <input type="submit" value="Add Skill" class="addproject" />
+        </form>
+      {{else}}
+        <h1>Must be administrator to add a new Skill!</h1>
+      {{/if}}
+    {{else}}
+      <h2>
+        Must be logged in to add a new Skill!
+        <br />
+        Please go to the
+        <a href="/login">login</a>
+        page.
+      </h2>
+    {{/if}}
+  </div>
+</body>
