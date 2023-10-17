@@ -18,6 +18,8 @@ const sqlite3 = require("sqlite3");
 const { error } = require("console");
 const bcrypt = require("bcrypt");
 
+app.listen(8080, "0.0.0.0");
+
 // Import the handlebars package
 const handlebars = require("handlebars");
 
@@ -100,7 +102,6 @@ app.get("/skills/create", (req, res) => {
   }
 });
 
-
 app.post("/skills/create", (req, res) => {
   // Check if the user is logged in and is an admin
   if (req.session.isLoggedIn && req.session.isAdmin) {
@@ -133,7 +134,7 @@ app.post("/skills/create", (req, res) => {
       (error) => {
         if (error) {
           console.error("Error creating a new skill:", error);
-          res.status(500).json({ error: "Failed to create a new skill" });
+          res.redirect("/about");
         } else {
           console.log("New skill created successfully.");
           // Redirect the user after creating the skill
@@ -194,8 +195,8 @@ app.get("/skills/update/:id", (req, res) => {
   });
 });
 
-app.put("/skills/:sid", (req, res) => {
-  const skillId = req.params.sid;
+app.post("/skills/:id", (req, res) => {
+  const skillId = req.params.id; // Use req.params.id to get the skill ID
   const { sname, sdesc, stype, proficiency_level, experience_years } = req.body;
 
   // Update the skill in the "skills" table in the database.
@@ -205,7 +206,7 @@ app.put("/skills/:sid", (req, res) => {
     (error) => {
       if (error) {
         console.error("Error updating the skill: ", error);
-        res.redirect("/about"); 
+        res.redirect("/about");
       } else {
         console.log("Skill updated successfully.");
         res.redirect("/about");
@@ -214,18 +215,17 @@ app.put("/skills/:sid", (req, res) => {
   );
 });
 
-
-app.delete("/skills/:sid", (req, res) => {
+app.post("/skills/delete/:sid", (req, res) => {
   const skillId = req.params.sid;
 
   // Delete the skill from the "skills" table in the database.
   db.run("DELETE FROM skills WHERE sid = ?", [skillId], (error) => {
     if (error) {
       console.error("Error deleting the skill: ", error);
-      res.status(500).json({ error: "Failed to delete the skill" });
+      res.redirect("/about");
     } else {
       console.log("Skill deleted successfully.");
-      res.status(200).json({ message: "Skill deleted successfully" });
+      res.redirect("/about");
     }
   });
 });
@@ -262,8 +262,6 @@ app.get("/about", (req, res) => {
     }
   });
 });
-
-
 
 app.post("/skills/create", (req, res) => {
   const { sname, sdesc, stype, proficiency_level, experience_years } = req.body;
@@ -324,6 +322,27 @@ app.get("/projects", (req, res) => {
       };
       res.render("projects.handlebars", model);
     }
+  });
+});
+
+// Define the route to preview a project
+app.get("/projects/preview/:id", (req, res) => {
+  const projectId = req.params.id;
+
+  // Create an SQL query to retrieve project details based on the project ID
+  const query = "SELECT * FROM projects WHERE pid = ?"; // Adjust the table name and column names as per your database schema
+
+  db.get(query, [projectId], (err, row) => {
+    if (err) {
+      console.error("Error retrieving project:", err.message);
+    }
+
+    if (!row) {
+      return res.status(404).json({ error: "Project not found" });
+    }
+
+    // Render the project preview page with the project details
+    res.render("projectspreview.handlebars", { project: row });
   });
 });
 
@@ -822,6 +841,18 @@ db.run(
         {
           lname: "Albanian",
           proficiency_level: "good",
+          language_type: "Spoken language",
+          notes: "thats a poggers",
+        },
+        {
+          lname: "Gibberish",
+          proficiency_level: "fluent",
+          language_type: "Spoken language",
+          notes: "thats a poggers",
+        },
+        {
+          lname: "Elvish",
+          proficiency_level: "amazing",
           language_type: "Spoken language",
           notes: "thats a poggers",
         },

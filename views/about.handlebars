@@ -19,38 +19,32 @@
     Sorry, there was a problem with the database:<br/>
     {{theError}}
   {{else}}
+
       {{#each Skills}}
  <h2 class="aboutmetext">
-  <div class="modifydeletediv1">
             {{#if ../isAdmin}}
             
               <form action="/skills/update/{{sid}}" method="get">
                 <input type="submit" value="Modify" class="modifydeletetext">
               </form> 
 
-              <form action="/skills/delete/{{sid}}" method="get" >
+              <form action="/skills/delete/{{sid}}" method="post" >
                 <input type="submit" value="Delete" class="modifydeletetext">
               </form> 
            
             {{/if}}
             {{sname}} - {{proficiency_level}}
- </div>
+
+            
 
       {{/each}}
       </h2>
-    
-    
-
-</div>
-<div class="textdiv">
       <h1 class="aboutmeheader">Languages</h1>
-      <div class="langdiv">
       {{#each LanguageSkills}}
         <h2 class="aboutmetext">{{lname}} - {{proficiency_level}}</h2>
       {{/each}}
-      </div>
-
 </div>
+
 </div>
 {{/if}}
 </body>

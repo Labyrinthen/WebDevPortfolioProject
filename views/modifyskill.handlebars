@@ -25,14 +25,14 @@
     rows="5"
   >{{skill.sdesc}}</textarea>
   <select name="stype" required="required">
-  <option value="Programming" {{#if (theTypeP skill.stype "Programming")}}selected{{/if}}>Programming</option>
-  <option value="Irl" {{#if (theTypeI skill.stype "Irl")}}selected{{/if}}>Irl</option>
-  <option value="General" {{#if (theTypeG skill.stype "General")}}selected{{/if}}>General</option>
+  <option value="Programming" {{#if (theTypeP skill.stype "Programming")}}selected="selected"{{/if}}>Programming</option>
+  <option value="Irl" {{#if (theTypeI skill.stype "Irl")}}selected="selected"{{/if}}>Irl</option>
+  <option value="General" {{#if (theTypeG skill.stype "General")}}selected="selected"{{/if}}>General</option>
 </select>
 <select name="proficiency_level" required="required">
-  <option value="Beginner" {{#if (theTypeB skill.proficiency_level "Beginner")}}selected{{/if}}>Beginner</option>
-  <option value="Intermediete" {{#if (theTypeIn skill.proficiency_level "Intermediete")}}selected{{/if}}>Intermediete</option>
-  <option value="Expert" {{#if (theTypeE skill.proficiency_level "Expert")}}selected{{/if}}>Expert</option>
+  <option value="Beginner" {{#if (theTypeB skill.proficiency_level "Beginner")}}selected="selected"{{/if}}>Beginner</option>
+  <option value="Intermediete" {{#if (theTypeIn skill.proficiency_level "Intermediete")}}selected="selected"{{/if}}>Intermediete</option>
+  <option value="Expert" {{#if (theTypeE skill.proficiency_level "Expert")}}selected="selected"{{/if}}>Expert</option>
 </select>
 <input type="submit" value="Modify Skill" class="addproject" />
 </form>
